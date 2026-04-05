@@ -1,5 +1,7 @@
 # Trabajo Final - Aprendizaje de Maquina II (CEIA - FIUBA)
 
+**Integrantes**: Juan Ignacio Teich | Facundo Rivas | Lourdes Florencia Gonzalez Branchi | Alberto Stryfe Adriano Levano
+
 Entorno productivo simulado de MLOps para la empresa ficticia **"ML Models and something more Inc."**, que ofrece modelos de Machine Learning a traves de una REST API.
 
 El proyecto implementa el ciclo completo de vida de un modelo ML en un ambiente containerizado (Docker):
@@ -240,17 +242,6 @@ Problema de **regresion**: predecir el nivel de presion sonora escalado (SSPL) a
 | `U_infinity` | Velocidad de flujo libre (m/s) |
 | `delta` | Espesor de desplazamiento del lado de succion (m) |
 | **`SSPL`** | **Target**: Nivel de presion sonora escalado (dB) |
-
----
-
-## Integrantes
-
-| # | Nombre |
-|---|--------|
-| 1 | Juan Ignacio Teich |
-| 2 | Facundo Rivas |
-| 3 | Lourdes Florencia Gonzalez Branchi |
-| 4 | Alberto Stryfe Adriano Levano |
 
 ---
 
