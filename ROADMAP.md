@@ -12,16 +12,16 @@
 - [x] Estructura de carpetas del repositorio
 
 ## Etapa 2: Pipeline ETL (DAG de Airflow)
-**Estado: Pendiente**
+**Estado: Completada**
 
-- [ ] Elegir dataset (de Aprendizaje de Maquina I)
-- [ ] Implementar task `obtain_original_data`: descarga del dataset y subida a S3
-- [ ] Implementar task `clean_and_transform_data`: limpieza, nulos, feature engineering
-- [ ] Implementar task `split_dataset`: division train/test estratificada
-- [ ] Implementar task `normalize_features`: StandardScaler en features numericas
-- [ ] Guardar esquema de datos (JSON) en S3
-- [ ] Registrar metadata del procesamiento en MLflow
-- [ ] Testear DAG completo en Airflow
+- [x] Elegir dataset: Airfoil Self-Noise (UCI ML Repository, id=291)
+- [x] Implementar task `obtain_original_data`: descarga del dataset y subida a S3
+- [x] Implementar task `clean_and_transform_data`: limpieza, nulos, renombrado de columnas
+- [x] Implementar task `split_dataset`: division train/test (80/20)
+- [x] Implementar task `normalize_features`: StandardScaler en features numericas
+- [x] Guardar esquema de datos y parametros del scaler en `s3://data/data_info/data.json`
+- [x] Registrar metadata del procesamiento en MLflow (dataset, params del scaler)
+- [x] Testear DAG completo en Airflow
 
 **Archivos involucrados:**
 - `airflow/dags/etl_process.py`
@@ -32,7 +32,7 @@
 
 - [ ] Desarrollar notebook de entrenamiento con MLflow tracking
 - [ ] Implementar busqueda de hiperparametros con Optuna
-- [ ] Definir metrica de optimizacion (ej. F1-score)
+- [ ] Definir metrica de optimizacion (ej. RMSE, R2)
 - [ ] Registrar experimentos en MLflow (parametros, metricas, artefactos)
 - [ ] Registrar el mejor modelo como "champion" en Model Registry
 - [ ] Crear scripts auxiliares (mlflow_aux.py, optuna_aux.py, plots.py)
@@ -53,7 +53,7 @@
   - [ ] Manejo de errores
 - [ ] Implementar DAG de reentrenamiento
   - [ ] Task: entrenar modelo challenger
-  - [ ] Task: evaluar champion vs challenger (F1-score)
+  - [ ] Task: evaluar champion vs challenger (RMSE, R2)
   - [ ] Task: promover ganador en Model Registry
 - [ ] Testear API end-to-end
 

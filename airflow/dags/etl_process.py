@@ -30,7 +30,7 @@ with DAG(
     @task.virtualenv(
         task_id="obtain_original_data",
         requirements=["ucimlrepo>=0.0", "awswrangler>=3.0"],
-        system_site_packages=False
+        system_site_packages=True
     )
     def obtain_original_data():
         """Descargar dataset desde la fuente original y guardarlo en MinIO (S3)."""
@@ -49,30 +49,87 @@ with DAG(
         task_id="clean_and_transform_data",
         requirements=[
             "awswrangler>=3.0",
+            "mlflow>=2.0",
         ],
-        system_site_packages=False
+        system_site_packages=True
     )
     def clean_and_transform_data():
         """Limpieza de datos y feature engineering (dummies, transformaciones)."""
+        import json
+        import datetime
+        import boto3
+        import botocore.exceptions
+        import mlflow
+
         import pandas as pd
         import awswrangler as wr
+
+        from airflow.models import Variable
 
         data_original_path = "s3://data/raw/airfoil_self_noise.csv"
         dataset = wr.s3.read_csv(data_original_path)
 
         dataframe = pd.DataFrame(dataset)
-        # Solo tenemos que renombrar los nombres por default de las columnas
+
+        # Limpiar duplicados y nulos
+        dataframe.drop_duplicates(inplace=True, ignore_index=True)
+        dataframe.dropna(inplace=True, ignore_index=True)
+
+        # Renombrar columnas
         dataframe = dataframe.rename(columns={
             'frequency': 'f',
             'attack-angle': 'alpha',
             'chord-length': 'c',
             'free-stream-velocity': 'U_infinity',
-            'suction-side-displacemente-thickness': 'delta',
+            'suction-side-displacement-thickness': 'delta',
             'scaled-sound-pressure': 'SSPL'
         })
 
         data_clean_path = "s3://data/clean/airfoil_self_noise.csv"
         wr.s3.to_csv(df=dataframe, path=data_clean_path, index=False)
+
+        # Guardar metadata del dataset en S3
+        client = boto3.client('s3')
+
+        data_dict = {}
+        try:
+            client.head_object(Bucket='data', Key='data_info/data.json')
+            result = client.get_object(Bucket='data', Key='data_info/data.json')
+            text = result["Body"].read().decode()
+            data_dict = json.loads(text)
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] != "404":
+                raise e
+
+        target_col = Variable.get("target_col_airfoil")
+        dataset_features = dataframe.drop(columns=target_col)
+
+        data_dict['columns'] = dataset_features.columns.to_list()
+        data_dict['target_col'] = target_col
+        data_dict['columns_dtypes'] = {k: str(v) for k, v in dataset_features.dtypes.to_dict().items()}
+        data_dict['date'] = datetime.datetime.today().strftime('%Y/%m/%d-%H:%M:%S')
+
+        data_string = json.dumps(data_dict, indent=2)
+        client.put_object(Bucket='data', Key='data_info/data.json', Body=data_string)
+
+        # Registrar en MLflow
+        mlflow.set_tracking_uri('http://mlflow:5000')
+        experiment = mlflow.set_experiment("Airfoil Self-Noise")
+
+        mlflow.start_run(
+            run_name='ETL_run_' + datetime.datetime.today().strftime('%Y/%m/%d-%H:%M:%S'),
+            experiment_id=experiment.experiment_id,
+            tags={"experiment": "etl", "dataset": "Airfoil Self-Noise"},
+            log_system_metrics=True
+        )
+
+        mlflow_dataset = mlflow.data.from_pandas(
+            dataframe,
+            source="https://archive.ics.uci.edu/dataset/291/airfoil+self+noise",
+            targets=target_col,
+            name="airfoil_self_noise_clean"
+        )
+        mlflow.log_input(mlflow_dataset, context="Dataset")
 
     @task.virtualenv(
         task_id="split_dataset",
@@ -97,7 +154,7 @@ with DAG(
         X = dataframe.drop(columns=[target_col])
         y = dataframe[[target_col]]
 
-        test_size = Variable.get("test_size_airfoil")
+        test_size = float(Variable.get("test_size_airfoil"))
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
 
@@ -113,23 +170,61 @@ with DAG(
             "scikit-learn>=1.0",
             "mlflow>=2.0",
         ],
-        system_site_packages=False
+        system_site_packages=True
     )
     def normalize_features():
+        """Normalizar features numericas con StandardScaler."""
+        import json
+        import mlflow
+        import boto3
+        import botocore.exceptions
+
         import awswrangler as wr
-        from sklearn.preprocessing import StandardScaler
         import pandas as pd
+        from sklearn.preprocessing import StandardScaler
 
         X_train = wr.s3.read_csv("s3://data/final/train/X_train.csv")
         X_test = wr.s3.read_csv("s3://data/final/test/X_test.csv")
 
-        scaler = StandardScaler()
-        
-        X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.columns)
-        X_test_scaled = pd.DataFrame(scaler.transform(X_test), columns=X_test.columns)
+        sc_X = StandardScaler(with_mean=True, with_std=True)
+        X_train_arr = sc_X.fit_transform(X_train)
+        X_test_arr = sc_X.transform(X_test)
 
-        wr.s3.to_csv(df=X_train_scaled, path="s3://data/final/train/X_train_scaled.csv", index=False)
-        wr.s3.to_csv(df=X_test_scaled,  path="s3://data/final/test/X_test_scaled.csv", index=False)
+        X_train = pd.DataFrame(X_train_arr, columns=X_train.columns)
+        X_test = pd.DataFrame(X_test_arr, columns=X_test.columns)
+
+        wr.s3.to_csv(df=X_train, path="s3://data/final/train/X_train.csv", index=False)
+        wr.s3.to_csv(df=X_test, path="s3://data/final/test/X_test.csv", index=False)
+
+        # Persistir parametros del scaler en S3
+        client = boto3.client('s3')
+
+        try:
+            client.head_object(Bucket='data', Key='data_info/data.json')
+            result = client.get_object(Bucket='data', Key='data_info/data.json')
+            text = result["Body"].read().decode()
+            data_dict = json.loads(text)
+        except botocore.exceptions.ClientError as e:
+            raise e
+
+        data_dict['standard_scaler_mean'] = sc_X.mean_.tolist()
+        data_dict['standard_scaler_std'] = sc_X.scale_.tolist()
+        data_string = json.dumps(data_dict, indent=2)
+
+        client.put_object(Bucket='data', Key='data_info/data.json', Body=data_string)
+
+        # Logear en MLflow
+        mlflow.set_tracking_uri('http://mlflow:5000')
+        experiment = mlflow.set_experiment("Airfoil Self-Noise")
+
+        list_run = mlflow.search_runs([experiment.experiment_id], output_format="list")
+
+        with mlflow.start_run(run_id=list_run[0].info.run_id):
+            mlflow.log_param("Train observations", X_train.shape[0])
+            mlflow.log_param("Test observations", X_test.shape[0])
+            mlflow.log_param("Standard Scaler feature names", sc_X.feature_names_in_)
+            mlflow.log_param("Standard Scaler mean values", sc_X.mean_)
+            mlflow.log_param("Standard Scaler scale values", sc_X.scale_)
 
     # Task dependencies: sequential pipeline
     obtain_original_data() >> clean_and_transform_data() >> split_dataset() >> normalize_features()

@@ -228,18 +228,29 @@ docker compose down --rmi all --volumes
 
 ## Dataset y modelo
 
-**Pendiente de definicion.** Se utilizara un dataset de la materia Aprendizaje de Maquina I, compatible con el pipeline propuesto (clasificacion o regresion supervisada).
+**Dataset**: [Airfoil Self-Noise](https://archive.ics.uci.edu/dataset/291/airfoil+self+noise) (UCI ML Repository, id=291)
+
+Problema de **regresion**: predecir el nivel de presion sonora escalado (SSPL) a partir de caracteristicas aerodinamicas de perfiles de alas.
+
+| Feature | Descripcion |
+|---------|-------------|
+| `f` | Frecuencia (Hz) |
+| `alpha` | Angulo de ataque (grados) |
+| `c` | Longitud de cuerda (m) |
+| `U_infinity` | Velocidad de flujo libre (m/s) |
+| `delta` | Espesor de desplazamiento del lado de succion (m) |
+| **`SSPL`** | **Target**: Nivel de presion sonora escalado (dB) |
 
 ---
 
 ## Integrantes
 
-| # | Nombre | Rol |
-|---|--------|-----|
-| 1 | TBD | Infraestructura y DevOps |
-| 2 | TBD | Pipeline ETL |
-| 3 | TBD | Entrenamiento y Experimentacion |
-| 4 | TBD | API REST + Reentrenamiento |
+| # | Nombre |
+|---|--------|
+| 1 | Juan Ignacio Teich |
+| 2 | Facundo Rivas |
+| 3 | Lourdes Florencia Gonzalez Branchi |
+| 4 | Alberto Stryfe Adriano Levano |
 
 ---
 
