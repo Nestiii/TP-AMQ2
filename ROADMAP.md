@@ -45,17 +45,17 @@
 - `notebook_example/plots.py`
 
 ## Etapa 4: API de Prediccion + Reentrenamiento
-**Estado: Pendiente**
+**Estado: Completada**
 
-- [ ] Implementar endpoint `POST /predict/` en FastAPI
-  - [ ] Cargar modelo champion desde MLflow
-  - [ ] Validacion de entrada con Pydantic
-  - [ ] Manejo de errores
-- [ ] Implementar DAG de reentrenamiento
-  - [ ] Task: entrenar modelo challenger
-  - [ ] Task: evaluar champion vs challenger (RMSE, R2)
-  - [ ] Task: promover ganador en Model Registry
-- [ ] Testear API end-to-end
+- [x] Implementar endpoint `POST /predict/` en FastAPI
+  - [x] Cargar modelo champion desde MLflow
+  - [x] Validacion de entrada con Pydantic
+  - [x] Manejo de errores
+- [x] Implementar DAG de reentrenamiento
+  - [x] Task: entrenar modelo challenger
+  - [x] Task: evaluar champion vs challenger (RMSE, R2)
+  - [x] Task: promover ganador en Model Registry
+- [x] Testear API end-to-end
 
 **Archivos involucrados:**
 - `dockerfiles/fastapi/app.py`
