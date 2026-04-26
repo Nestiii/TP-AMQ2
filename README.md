@@ -173,8 +173,6 @@ También podés verificar abriendo estas URLs en el navegador:
   - `mlflow/`: donde MLflow guarda los artefactos del modelo champion (lo llena el notebook en el Paso 3)
 - **MLflow**: Vacío por ahora, se llena en los pasos siguientes
 
----
-
 ### Paso 2: Ejecutar el ETL
 
 El ETL (Extract, Transform, Load) es el proceso que descarga el dataset, lo limpia y lo divide en conjuntos de entrenamiento y testeo. Los datos crudos y procesados se guardan en el bucket `data/` de MinIO.
@@ -199,8 +197,6 @@ Entrá a **MinIO** (http://localhost:9001) → bucket `data/` y deberías ver es
 | `data_info/data.json` | Metadata del dataset |
 
 > En este paso solo nos importa el bucket `data/`. El bucket `mlflow/` se llena en el Paso 3.
-
----
 
 ### Paso 3: Entrenamiento inicial
 
@@ -260,7 +256,6 @@ Entrá a **MLflow** (http://localhost:5001) → **Models** → `airfoil_model_pr
 
 Una vez registrado el champion, **FastAPI se va a estabilizar automáticamente** y http://localhost:8800/docs va a estar disponible.
 
----
 
 ### Paso 4: Predicción via API
 
@@ -300,7 +295,6 @@ curl -X POST http://localhost:8800/predict/ \
   -d '{"features": {"f": 1000, "alpha": 5.4, "c": 0.1524, "U_infinity": 39.6, "delta": 0.00529}}'
 ```
 
----
 
 ### Paso 5: Reentrenamiento automático
 
