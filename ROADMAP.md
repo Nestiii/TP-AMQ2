@@ -28,15 +28,15 @@
 - `airflow/secrets/variables.yaml` (actualizar target_col y variables del dataset)
 
 ## Etapa 3: Entrenamiento y Experimentacion
-**Estado: Pendiente**
+**Estado: Completada**
 
-- [ ] Desarrollar notebook de entrenamiento con MLflow tracking
-- [ ] Implementar busqueda de hiperparametros con Optuna
-- [ ] Definir metrica de optimizacion (ej. RMSE, R2)
-- [ ] Registrar experimentos en MLflow (parametros, metricas, artefactos)
-- [ ] Registrar el mejor modelo como "champion" en Model Registry
-- [ ] Crear scripts auxiliares (mlflow_aux.py, optuna_aux.py, plots.py)
-- [ ] Generar visualizaciones de resultados
+- [x] Desarrollar notebook de entrenamiento con MLflow tracking
+- [x] Implementar busqueda de hiperparametros con Optuna
+- [x] Definir metrica de optimizacion (ej. RMSE, R2)
+- [x] Registrar experimentos en MLflow (parametros, metricas, artefactos)
+- [x] Registrar el mejor modelo como "champion" en Model Registry
+- [x] Crear scripts auxiliares (mlflow_aux.py, optuna_aux.py, plots.py)
+- [x] Generar visualizaciones de resultados
 
 **Archivos involucrados:**
 - `notebook_example/experiment_mlflow.ipynb`
