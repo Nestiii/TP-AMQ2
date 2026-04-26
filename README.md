@@ -83,7 +83,12 @@ El problema consiste en predecir el **nivel de presión sonora escalado (SSPL, e
 | Containers | Docker Compose | Orquestación de todos los servicios |
 
 ---
+## Arquitectura
+El siguiente diagrama muestra los servicios y flujos del sistema:
 
+![Diagrama de arquitectura](Diagrama.png)
+
+---
 ## Estructura del proyecto
 
 ```
@@ -311,11 +316,6 @@ El DAG `retrain_the_model` re-entrena el modelo usando los datos actuales y lo c
 
 > **Nota**: como el challenger usa los mismos datos, hiperparámetros y semilla aleatoria que el champion, el R² suele ser casi idéntico y generalmente gana el champion (por la condición `>` estricta). Para forzar que gane el challenger, podés modificar `retrain_the_model.py` quitando el `random_state` o cambiando los hiperparámetros.
 
----
-## Arquitectura
-El siguiente diagrama muestra los servicios y flujos del sistema:
-
-![Diagrama de arquitectura](docs/images/diagrama.png)
 ---
 
 ## Comandos útiles
